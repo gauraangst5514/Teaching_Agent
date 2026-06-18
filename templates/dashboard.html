@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard — AI Teacher Assistant{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="dashboard-header">
+    <div class="dashboard-header__content">
+        <h1 class="dashboard-header__title">
+            <span class="gradient-text">Teacher Dashboard</span>
+        </h1>
+        <p class="dashboard-header__subtitle">Monitor student submissions, review AI-generated feedback, and track performance.</p>
+    </div>
+</section>
+
+<!-- Stats Row -->
+<section class="stats-row">
+    <div class="stat-card" style="animation-delay: 0s;">
+        <div class="stat-card__icon">📚</div>
+        <div class="stat-card__content">
+            <p class="stat-card__value">{{ stats.total_submissions }}</p>
+            <p class="stat-card__label">Total Submissions</p>
+        </div>
+        <div class="stat-card__glow stat-card__glow--indigo"></div>
+    </div>
+
+    <div class="stat-card" style="animation-delay: 0.08s;">
+        <div class="stat-card__icon">📊</div>
+        <div class="stat-card__content">
+            <p class="stat-card__value">{{ "%.1f" | format(stats.avg_score) }}%</p>
+            <p class="stat-card__label">Average Score</p>
+        </div>
+        <div class="stat-card__glow stat-card__glow--violet"></div>
+    </div>
+
+    <div class="stat-card" style="animation-delay: 0.16s;">
+        <div class="stat-card__icon">✅</div>
+        <div class="stat-card__content">
+            <p class="stat-card__value">{{ stats.completed_count }}</p>
+            <p class="stat-card__label">Completed</p>
+        </div>
+        <div class="stat-card__glow stat-card__glow--green"></div>
+    </div>
+
+    <div class="stat-card" style="animation-delay: 0.24s;">
+        <div class="stat-card__icon">⏳</div>
+        <div class="stat-card__content">
+            <p class="stat-card__value">{{ stats.pending_count }}</p>
+            <p class="stat-card__label">Pending</p>
+        </div>
+        <div class="stat-card__glow stat-card__glow--amber"></div>
+    </div>
+</section>
+
+<!-- Search / Filter Bar -->
+<section class="filter-bar">
+    <div class="filter-bar__search">
+        <span class="filter-bar__search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </span>
+        <input type="text" id="searchInput" class="filter-bar__input" placeholder="Search by student name, type, or status…">
+    </div>
+    <div class="filter-bar__actions">
+        <select id="statusFilter" class="filter-bar__select">
+            <option value="">All Statuses</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="processing">⚙️ Processing</option>
+            <option value="completed">✅ Completed</option>
+            <option value="failed">❌ Failed</option>
+        </select>
+        <select id="typeFilter" class="filter-bar__select">
+            <option value="">All Types</option>
+            <option value="notebook">📓 Notebook</option>
+            <option value="assignment">📄 Assignment</option>
+            <option value="solution">✍️ Solution</option>
+            <option value="question">❓ Question</option>
+            <option value="youtube">▶️ YouTube</option>
+        </select>
+    </div>
+</section>
+
+<!-- Submissions Table -->
+{% if submissions and submissions|length > 0 %}
+<section class="table-container card">
+    <div class="table-wrapper">
+        <table class="data-table" id="submissionsTable">
+            <thead>
+                <tr>
+                    <th class="data-table__th data-table__th--sortable" data-sort="id">
+                        <span>ID</span>
+                        <span class="sort-icon">↕</span>
+                    </th>
+                    <th class="data-table__th data-table__th--sortable" data-sort="student">
+                        <span>Student</span>
+                        <span class="sort-icon">↕</span>
+                    </th>
+                    <th class="data-table__th data-table__th--sortable" data-sort="type">
+                        <span>Type</span>
+                        <span class="sort-icon">↕</span>
+                    </th>
+                    <th class="data-table__th data-table__th--sortable" data-sort="score">
+                        <span>Score</span>
+                        <span class="sort-icon">↕</span>
+                    </th>
+                    <th class="data-table__th data-table__th--sortable" data-sort="status">
+                        <span>Status</span>
+                        <span class="sort-icon">↕</span>
+                    </th>
+                    <th class="data-table__th data-table__th--sortable" data-sort="date">
+                        <span>Date</span>
+                        <span class="sort-icon">↕</span>
+                    </th>
+                    <th class="data-table__th">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for sub in submissions %}
+                <tr class="data-table__row" data-student="{{ sub.student_name | lower }}" data-type="{{ sub.submission_type }}" data-status="{{ sub.status }}" data-score="{{ sub.score if sub.score is defined else '' }}" data-date="{{ sub.created_at }}">
+                    <td class="data-table__td">
+                        <span class="table-id">#{{ sub.id }}</span>
+                    </td>
+                    <td class="data-table__td">
+                        <div class="table-student">
+                            <span class="table-student__avatar">{{ sub.student_name[0] | upper }}</span>
+                            <span class="table-student__name">{{ sub.student_name }}</span>
+                        </div>
+                    </td>
+                    <td class="data-table__td">
+                        <span class="table-type">
+                            {% if sub.submission_type == 'notebook' %}📓
+                            {% elif sub.submission_type == 'assignment' %}📄
+                            {% elif sub.submission_type == 'solution' %}✍️
+                            {% elif sub.submission_type == 'youtube' %}▶️
+                            {% else %}❓{% endif %}
+                            {{ sub.submission_type | capitalize }}
+                        </span>
+                    </td>
+                    <td class="data-table__td">
+                        {% if sub.score is defined and sub.score is not none %}
+                        <span class="score-badge {% if sub.score >= 70 %}score-badge--high{% elif sub.score >= 40 %}score-badge--mid{% else %}score-badge--low{% endif %}">
+                            {{ sub.score }}%
+                        </span>
+                        {% else %}
+                        <span class="score-badge score-badge--na">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="data-table__td">
+                        <span class="status-badge status-badge--{{ sub.status }}">
+                            {% if sub.status == 'pending' %}⏳
+                            {% elif sub.status == 'processing' %}⚙️
+                            {% elif sub.status == 'completed' %}✅
+                            {% else %}❌{% endif %}
+                            {{ sub.status | capitalize }}
+                        </span>
+                    </td>
+                    <td class="data-table__td">
+                        <span class="table-date">{{ sub.created_at }}</span>
+                    </td>
+                    <td class="data-table__td">
+                        <a href="/submission/{{ sub.id }}" class="btn btn--small btn--ghost">
+                            View →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% else %}
+<section class="empty-state">
+    <div class="empty-state__icon">📭</div>
+    <h3 class="empty-state__title">No Submissions Yet</h3>
+    <p class="empty-state__text">Submissions from students will appear here once they start uploading their work.</p>
+    <a href="/" class="btn btn--primary" style="margin-top: 1.5rem;">Go to Student Portal</a>
+</section>
+{% endif %}
+{% endblock %}

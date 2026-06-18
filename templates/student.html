@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Student Portal — AI Teacher Assistant{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero__content">
+        <h1 class="hero__title">
+            <span class="gradient-text">AI Teacher Assistant</span>
+        </h1>
+        <p class="hero__subtitle">Upload your work for instant AI-powered feedback, or ask any question and get help immediately.</p>
+    </div>
+    <div class="hero__particles" aria-hidden="true">
+        <div class="hero__particle hero__particle--1"></div>
+        <div class="hero__particle hero__particle--2"></div>
+        <div class="hero__particle hero__particle--3"></div>
+    </div>
+</section>
+
+<!-- Main Two-Column Layout -->
+<section class="portal-grid">
+    <!-- LEFT COLUMN: Upload Zone -->
+    <article class="card card--upload" id="uploadCard">
+        <div class="card__header">
+            <h2 class="card__title">
+                <span class="card__title-icon">📤</span>
+                Upload Your Work
+            </h2>
+            <p class="card__description">Drag &amp; drop or click to upload your notebook, assignment, or solution.</p>
+        </div>
+
+        <form action="/submit" method="POST" enctype="multipart/form-data" id="uploadForm" class="upload-form">
+            <!-- Drag and Drop Zone -->
+            <div class="dropzone" id="dropZone" tabindex="0" role="button" aria-label="Click or drag files to upload">
+                <div class="dropzone__content" id="dropzoneContent">
+                    <div class="dropzone__icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <p class="dropzone__text">Drag &amp; drop your file here</p>
+                    <p class="dropzone__hint">or click to browse · PNG, JPG, PDF up to 10MB</p>
+                </div>
+                <div class="dropzone__preview" id="dropzonePreview" style="display:none;">
+                    <img id="previewImage" class="dropzone__preview-img" alt="File preview">
+                    <div class="dropzone__preview-info">
+                        <p id="previewFileName" class="dropzone__preview-name"></p>
+                        <p id="previewFileSize" class="dropzone__preview-size"></p>
+                        <button type="button" class="dropzone__preview-remove" id="removeFile" aria-label="Remove file">✕ Remove</button>
+                    </div>
+                </div>
+                <input type="file" name="file" id="fileInput" class="dropzone__input" accept="image/*,.pdf" required>
+            </div>
+
+            <!-- Student Name -->
+            <div class="form-group">
+                <label for="studentName" class="form-label">Student Name</label>
+                <input type="text" name="student_name" id="studentName" class="form-input" placeholder="Enter your full name" required>
+            </div>
+
+            <!-- Hidden Submission Type -->
+            <input type="hidden" name="submission_type" value="assignment">
+
+            <!-- Optional Question Text -->
+            <div class="form-group" id="questionTextGroup" style="display:none;">
+                <label for="questionText" class="form-label">Question / Additional Context</label>
+                <textarea name="question_text" id="questionText" class="form-textarea" placeholder="Describe your question or provide context…" rows="3"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn--primary btn--full" id="submitBtn">
+                <span class="btn__text">Submit for Review</span>
+                <span class="btn__loader" id="submitLoader" style="display:none;">
+                    <span class="spinner"></span>
+                    Processing…
+                </span>
+            </button>
+        </form>
+    </article>
+
+    <!-- RIGHT COLUMN: Quick Question -->
+    <article class="card card--question" id="questionCard">
+        <div class="card__header">
+            <h2 class="card__title">
+                <span class="card__title-icon">💬</span>
+                Quick Question
+            </h2>
+            <p class="card__description">Ask any academic question and get an instant AI-powered answer.</p>
+        </div>
+
+        <div class="quick-question">
+            <div class="form-group">
+                <label for="quickQuestionInput" class="form-label">Your Question</label>
+                <textarea id="quickQuestionInput" class="form-textarea form-textarea--auto" placeholder="Type your question here… e.g., 'Explain the Pythagorean theorem'" rows="4"></textarea>
+            </div>
+
+            <button type="button" class="btn btn--accent" id="askAiBtn">
+                <span class="btn__text">✨ Ask AI</span>
+                <span class="btn__loader" id="askLoader" style="display:none;">
+                    <span class="spinner"></span>
+                    Thinking…
+                </span>
+            </button>
+
+            <!-- AI Response Area -->
+            <div class="ai-response" id="aiResponseArea" style="display:none;">
+                <div class="ai-response__header">
+                    <span class="ai-response__icon">🤖</span>
+                    <span class="ai-response__label">AI Response</span>
+                </div>
+                <div class="ai-response__content" id="aiResponseContent"></div>
+            </div>
+        </div>
+    </article>
+</section>
+
+<!-- Learn from YouTube Section -->
+<section class="portal-grid" style="grid-template-columns: 1fr; margin-top: -20px;">
+    <article class="card card--youtube" id="youtubeCard">
+        <div class="card__header">
+            <h2 class="card__title">
+                <span class="card__title-icon">▶️</span>
+                Learn from YouTube
+            </h2>
+            <p class="card__description">Insert a YouTube video URL to generate a detailed explanation report.</p>
+        </div>
+
+        <form action="/submit" method="POST" enctype="multipart/form-data" id="youtubeForm" class="upload-form">
+            <div class="form-group">
+                <label for="youtubeUrl" class="form-label">YouTube URL</label>
+                <input type="url" name="question_text" id="youtubeUrl" class="form-input" placeholder="https://www.youtube.com/watch?v=..." required>
+            </div>
+            <div class="form-group">
+                <label for="youtubeStudentName" class="form-label">Student Name</label>
+                <input type="text" name="student_name" id="youtubeStudentName" class="form-input" placeholder="Enter your full name" required>
+            </div>
+            
+            <input type="hidden" name="submission_type" value="youtube">
+            <!-- Ensure file is empty so backend doesn't crash on empty tuple -->
+            <input type="file" name="file" style="display:none;">
+            
+            <button type="submit" class="btn btn--primary btn--full" id="submitYoutubeBtn" onclick="this.classList.add('loading'); document.getElementById('submitYoutubeLoader').style.display='inline-block';">
+                <span class="btn__text">Generate Report</span>
+                <span class="btn__loader" id="submitYoutubeLoader" style="display:none;">
+                    <span class="spinner"></span>
+                    Processing…
+                </span>
+            </button>
+        </form>
+    </article>
+</section>
+
+<!-- Recent Submissions Section -->
+
+<section class="recent-submissions">
+    <div class="section-header">
+        <h2 class="section-title">
+            <span class="section-title__icon">📋</span>
+            Recent Submissions
+        </h2>
+    </div>
+
+    {% if recent_submissions and recent_submissions|length > 0 %}
+    <div class="submissions-grid">
+        {% for sub in recent_submissions %}
+        <a href="/submission/{{ sub.id }}" class="submission-card" style="animation-delay: {{ loop.index0 * 0.08 }}s;">
+            <div class="submission-card__header">
+                <span class="submission-card__type">
+                    {% if sub.submission_type == 'notebook' %}📓
+                    {% elif sub.submission_type == 'assignment' %}📄
+                    {% elif sub.submission_type == 'solution' %}✍️
+                    {% elif sub.submission_type == 'youtube' %}▶️
+                    {% else %}❓{% endif %}
+                    {{ sub.submission_type | capitalize }}
+                </span>
+                <span class="status-badge status-badge--{{ sub.status }}">
+                    {% if sub.status == 'pending' %}⏳
+                    {% elif sub.status == 'processing' %}⚙️
+                    {% elif sub.status == 'completed' %}✅
+                    {% else %}❌{% endif %}
+                    {{ sub.status | capitalize }}
+                </span>
+            </div>
+            <div class="submission-card__body">
+                <p class="submission-card__name">{{ sub.student_name }}</p>
+                <p class="submission-card__date">{{ sub.created_at }}</p>
+            </div>
+            <div class="submission-card__footer">
+                <span class="submission-card__link">View Details →</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state__icon">📭</div>
+        <h3 class="empty-state__title">No submissions yet</h3>
+        <p class="empty-state__text">Upload your first assignment or notebook to get started with AI-powered feedback.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

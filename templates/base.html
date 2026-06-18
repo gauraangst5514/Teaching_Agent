@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Powered Teacher Assistant — Intelligent grading, feedback, and student support powered by advanced AI.">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="color-scheme" content="dark">
+    <title>{% block title %}AI Teacher Assistant{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar__brand">
+            <div class="sidebar__logo">
+                <span class="sidebar__logo-icon">🧠</span>
+            </div>
+            <h1 class="sidebar__title">TeachAI</h1>
+            <p class="sidebar__subtitle">Assistant</p>
+        </div>
+
+        <nav class="sidebar__nav">
+            <a href="/" class="sidebar__link {% if active_page == 'student' %}sidebar__link--active{% endif %}">
+                <span class="sidebar__link-icon">🎓</span>
+                <span class="sidebar__link-text">Student Portal</span>
+            </a>
+            <a href="/dashboard" class="sidebar__link {% if active_page == 'dashboard' %}sidebar__link--active{% endif %}">
+                <span class="sidebar__link-icon">📊</span>
+                <span class="sidebar__link-text">Teacher Dashboard</span>
+            </a>
+        </nav>
+
+        <div class="sidebar__footer">
+            <div class="sidebar__status">
+                <span class="sidebar__status-dot"></span>
+                <span class="sidebar__status-text">AI Engine Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile Top Bar -->
+    <header class="topbar" id="topbar">
+        <button class="topbar__toggle" id="sidebarToggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="topbar__brand">
+            <span class="topbar__logo-icon">🧠</span>
+            <span class="topbar__title">TeachAI</span>
+        </div>
+    </header>
+
+    <!-- Animated Gradient Header Bar -->
+    <div class="gradient-bar" aria-hidden="true"></div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <p class="site-footer__text">
+                <span class="site-footer__icon">⚡</span>
+                Powered by <strong>TeachAI</strong> &mdash; Intelligent Grading &amp; Feedback
+            </p>
+            <p class="site-footer__meta">Built with AI · FastAPI · {{ "2026" }}</p>
+        </div>
+    </footer>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

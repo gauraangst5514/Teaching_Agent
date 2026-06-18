@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Submission #{{ submission.id }} — AI Teacher Assistant{% endblock %}
+
+{% block content %}
+<!-- Back Navigation -->
+<div class="page-nav">
+    <a href="/" class="btn btn--ghost">
+        <span>← Back to Student Portal</span>
+    </a>
+    <div class="page-nav__meta">
+        <span class="status-badge status-badge--{{ submission.status }}">
+            {% if submission.status == 'pending' %}⏳
+            {% elif submission.status == 'processing' %}⚙️
+            {% elif submission.status == 'completed' %}✅
+            {% else %}❌{% endif %}
+            {{ submission.status | capitalize }}
+        </span>
+        <span class="page-nav__id">Submission #{{ submission.id }}</span>
+    </div>
+</div>
+
+{% if submission.status == 'processing' %}
+<!-- Processing State -->
+<section class="processing-state">
+    <div class="processing-state__inner">
+        <div class="processing-state__animation">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring pulse-ring--delay"></div>
+            <div class="pulse-ring pulse-ring--delay2"></div>
+            <span class="processing-state__icon">🧠</span>
+        </div>
+        <h2 class="processing-state__title">AI is Analyzing Your Submission</h2>
+        <p class="processing-state__text">Our AI engine is carefully reviewing your work. This usually takes a few moments…</p>
+        <div class="processing-state__bar">
+            <div class="processing-state__bar-fill"></div>
+        </div>
+    </div>
+</section>
+
+{% elif submission.status == 'pending' %}
+<!-- Pending State -->
+<section class="info-state">
+    <div class="info-state__inner">
+        <div class="info-state__icon">⏳</div>
+        <h2 class="info-state__title">Submission Queued</h2>
+        <p class="info-state__text">Your submission is in the queue and will be processed shortly. Please check back in a moment.</p>
+    </div>
+</section>
+
+{% elif submission.status == 'failed' %}
+<!-- Failed State -->
+<section class="info-state info-state--danger">
+    <div class="info-state__inner">
+        <div class="info-state__icon">❌</div>
+        <h2 class="info-state__title">Processing Failed</h2>
+        <p class="info-state__text">We encountered an error while processing your submission. Please try uploading again or contact support.</p>
+        <a href="/" class="btn btn--primary" style="margin-top:1rem;">Try Again</a>
+    </div>
+</section>
+
+{% else %}
+<!-- Completed: Show Full Results -->
+<section class="submission-detail">
+    <div class="submission-detail__grid">
+        <!-- LEFT: Original Submission -->
+        <article class="card card--detail">
+            <div class="card__header">
+                <h2 class="card__title">
+                    <span class="card__title-icon">📎</span>
+                    Original Submission
+                </h2>
+            </div>
+
+            <!-- Submission Preview -->
+            {% if submission.file_path %}
+            <div class="submission-preview">
+                {% if submission.file_path.endswith('.pdf') %}
+                <div class="submission-preview__pdf">
+                    <div class="submission-preview__pdf-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                    <p class="submission-preview__pdf-label">PDF Document</p>
+                </div>
+                {% else %}
+                <img src="/uploads/{{ submission.file_path }}" alt="Submitted work" class="submission-preview__image" loading="lazy">
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Extracted Text -->
+            {% if submission.extracted_text %}
+            <div class="extracted-text">
+                <h3 class="extracted-text__title">📝 Extracted Text</h3>
+                <pre class="extracted-text__code"><code>{{ submission.extracted_text }}</code></pre>
+            </div>
+            {% endif %}
+
+            <!-- Metadata -->
+            <div class="submission-meta">
+                <div class="submission-meta__item">
+                    <span class="submission-meta__label">Type</span>
+                    <span class="submission-meta__value">
+                        {% if submission.submission_type == 'notebook' %}📓 Notebook
+                        {% elif submission.submission_type == 'assignment' %}📄 Assignment
+                        {% elif submission.submission_type == 'solution' %}✍️ Solution
+                        {% elif submission.submission_type == 'youtube' %}▶️ YouTube
+                        {% else %}❓ Question{% endif %}
+                    </span>
+                </div>
+                <div class="submission-meta__item">
+                    <span class="submission-meta__label">Student</span>
+                    <span class="submission-meta__value">{{ submission.student_name }}</span>
+                </div>
+                <div class="submission-meta__item">
+                    <span class="submission-meta__label">Submitted</span>
+                    <span class="submission-meta__value">{{ submission.created_at }}</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- RIGHT: AI Feedback -->
+        {% if feedback %}
+        <article class="card card--feedback">
+            <div class="card__header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="card__title">
+                    <span class="card__title-icon">🤖</span>
+                    AI Feedback
+                </h2>
+                <a href="/submission/{{ submission.id }}/download" class="btn btn--secondary btn--sm">
+                    📥 Download Report
+                </a>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="feedback-tabs">
+                <button type="button" class="feedback-tab feedback-tab--active" data-target="tab-feedback">Feedback</button>
+                <button type="button" class="feedback-tab" data-target="tab-explanation">Explanation</button>
+                <button type="button" class="feedback-tab" data-target="tab-chat">Chat</button>
+            </div>
+
+            <!-- TAB: FEEDBACK -->
+            <div class="feedback-tab-content feedback-tab-content--active" id="tab-feedback">
+                <!-- Score Gauge -->
+                <div class="score-gauge" id="scoreGauge" data-score="{{ feedback.correctness_score if feedback.correctness_score is not none else 0 }}">
+                    <div class="score-gauge__ring">
+                        <div class="score-gauge__circle" id="scoreCircle"></div>
+                        <div class="score-gauge__inner">
+                            <span class="score-gauge__value" id="scoreValue">0</span>
+                            <span class="score-gauge__label">Score</span>
+                        </div>
+                    </div>
+                    <p class="score-gauge__description">
+                        {% if feedback.correctness_score is not none and feedback.correctness_score >= 80 %}
+                            🌟 Excellent work! Keep it up!
+                        {% elif feedback.correctness_score is not none and feedback.correctness_score >= 60 %}
+                            👍 Good effort! Room for improvement.
+                        {% elif feedback.correctness_score is not none and feedback.correctness_score >= 40 %}
+                            📝 Needs more work. Review the feedback below.
+                        {% else %}
+                            💪 Don't give up! Let's work through the mistakes.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Mistakes -->
+                {% if feedback.mistakes and feedback.mistakes|length > 0 %}
+                <div class="feedback-section feedback-section--mistakes">
+                    <h3 class="feedback-section__title">
+                        <span class="feedback-section__icon feedback-section__icon--danger">⚠️</span>
+                        Mistakes Found ({{ feedback.mistakes|length }})
+                    </h3>
+                    <div class="feedback-section__cards">
+                        {% for mistake in feedback.mistakes %}
+                        <div class="feedback-card feedback-card--danger" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+                            <div class="feedback-card__number">{{ loop.index }}</div>
+                            {% if mistake is mapping %}
+                            <div class="feedback-card__detail">
+                                <strong>Problem:</strong> <span class="markdown-prose">{{ mistake.get('problem', 'N/A') }}</span><br>
+                                <strong>Your answer:</strong> <span class="markdown-prose">{{ mistake.get('student_answer', 'N/A') }}</span><br>
+                                <strong>Correct answer:</strong> <span class="markdown-prose">{{ mistake.get('correct_answer', 'N/A') }}</span><br>
+                                <strong>Error type:</strong> <span class="tag tag--{{ mistake.get('error_type', 'other') }}">{{ mistake.get('error_type', 'other') }}</span><br>
+                                <div class="markdown-prose">{{ mistake.get('description', '') }}</div>
+                            </div>
+                            {% else %}
+                            <div class="feedback-card__text markdown-prose">{{ mistake }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Suggestions -->
+                {% if feedback.suggestions %}
+                <div class="feedback-section feedback-section--suggestions">
+                    <h3 class="feedback-section__title">
+                        <span class="feedback-section__icon feedback-section__icon--success">🎯</span>
+                        Suggestions
+                    </h3>
+                    <div class="feedback-card feedback-card--success">
+                        <div class="feedback-card__text markdown-prose">{{ feedback.suggestions }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Overall Feedback -->
+                {% if feedback.overall_feedback %}
+                <div class="overall-feedback">
+                    <h3 class="overall-feedback__title">📌 Overall Feedback</h3>
+                    <div class="overall-feedback__content markdown-prose">
+                        {{ feedback.overall_feedback }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- TAB: EXPLANATION -->
+            <div class="feedback-tab-content" id="tab-explanation" style="display: none;">
+                {% if feedback.explanation %}
+                <div class="feedback-section feedback-section--explanation">
+                    <div class="feedback-card feedback-card--info">
+                        <div class="feedback-card__text markdown-prose">{{ feedback.explanation }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="info-state info-state--empty" style="margin-top:20px;">
+                    <div class="info-state__inner">
+                        <p class="info-state__text">No detailed explanation available for this submission.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- TAB: CHAT -->
+            <div class="feedback-tab-content" id="tab-chat" style="display: none;">
+                <div class="submission-chat" id="submissionChat" data-id="{{ submission.id }}">
+                    <div class="submission-chat__history" id="chatHistory">
+                        <!-- Chat messages will be injected here via JS -->
+                    </div>
+                    <div class="submission-chat__input-group">
+                        <textarea class="form-textarea form-textarea--auto submission-chat__input" id="chatInput" rows="1" placeholder="Ask a question about this document..."></textarea>
+                        <button type="button" class="btn btn--primary submission-chat__btn" id="chatSendBtn">
+                            <span class="btn__text">Send</span>
+                            <span class="btn__loader" id="chatLoader" style="display:none;">⏳</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
